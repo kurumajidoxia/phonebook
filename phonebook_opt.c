@@ -1,26 +1,54 @@
 #include <stdlib.h>
+#include<string.h>
 
 #include "phonebook_opt.h"
 
 /* FILL YOUR OWN IMPLEMENTATION HERE! */
-entry *findName(char lastname[], entry *pHead)
+entry *findName(char lastName[], entry *hash_table[])
 {
     /* TODO: implement */
-    while (pHead != NULL) {
-        if (strcasecmp(lastname, pHead->lastName) == 0)
-            return pHead;
-        pHead = pHead->pNext;
+    unsigned int hashV;
+    entry *e;
+    hashV=hash_func(lastName);
+    e=hash_table[hashV];
+    while(e != NULL) {
+        if(strcasecmp(e->lastName,lastName)==0)
+            return e;
+        e=e->pNext;
     }
     return NULL;
 }
 
-entry *append(char lastName[], entry *e)
+void append(char lastName[], entry * hash_table[])
 {
     /* allocate memory for the new entry and put lastName */
-    e->pNext = (entry *) malloc(sizeof(entry));
-    e = e->pNext;
-    strcpy(e->lastName, lastName);
-    e->pNext = NULL;
+    entry *e;
+    unsigned int hashV;
 
-    return e;
+    e=(entry*)malloc(sizeof(entry));
+    e->pNext=NULL;
+    strcpy(e->lastName,lastName);
+    hashV=hash_func(lastName);
+    if(hash_table[hashV]==NULL) {
+        hash_table[hashV]=e;
+    } else {
+        e->pNext=hash_table[hashV]->pNext;
+        hash_table[hashV]->pNext=e;
+    }
+
+    return ;
 }
+
+unsigned int hash_func(char lastName[]) //djb2 hash function
+{
+    unsigned int hash_value=5381;
+    int c;
+
+    while ((c=*lastName++)) {
+        hash_value=((hash_value<<5)+hash_value)+c;
+    }
+    return hash_value % SIZE_OF_HASH;
+}
+
+
+
